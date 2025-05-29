@@ -26,6 +26,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { NextPageWithLayout } from "../_app";
 
+
 const CategoriesPage: NextPageWithLayout = () => {
   const [createCategoryDialogOpen, setCreateCategoryDialogOpen] =
     useState(false);
@@ -40,9 +41,25 @@ const CategoriesPage: NextPageWithLayout = () => {
     resolver: zodResolver(categoryFormSchema),
   });
 
+  const { data: categories, isLoading: categoriesIsLoading } =
+    api.category.getCategories.useQuery();
+
+  const { mutate: createCategory } = api.category.getCategories.useMutation({
+    onSuccess: () => {
+      alert: "Category created successfully!",
+        setCreateCategoryDialogOpen(false);
+      createCategoryForm.reset();
+    },
+  });
+
+
+
   const handleSubmitCreateCategory = (data: CategoryFormSchema) => {
-    console.log(data);
+     createCategory({
+      name: data.name,
+    });
   };
+
 
   const handleSubmitEditCategory = (data: CategoryFormSchema) => {
     console.log(data);
@@ -104,31 +121,17 @@ const CategoriesPage: NextPageWithLayout = () => {
         </div>
       </DashboardHeader>
 
-      <div>
-        {CATEGORIES.length === 0 ? (
-          <div className="rounded-md border">
-            <div className="p-8 text-center">
-              <p className="text-muted-foreground">No categories found</p>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Get started by creating your first category
-              </p>
-            </div>
+        <div>
+        {categories?.map((category) => {
+          return (
+            <CategoryCatalogCard
+              name={category.name}
+              productCount={categories.productCount}
+              key={categories.id}
+            />
+          );
+        })}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {CATEGORIES.filter((cat) => cat.id !== "all").map((category) => (
-              <CategoryCatalogCard
-                key={category.id}
-                name={category.name}
-                productCount={category.count}
-                onEdit={() => handleClickEditCategory(category)}
-                onDelete={() => handleClickDeleteCategory(category.id)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
       <AlertDialog
         open={editCategoryDialogOpen}
         onOpenChange={setEditCategoryDialogOpen}

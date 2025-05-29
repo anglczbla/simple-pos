@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +7,16 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
-        
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  products Product[] // ubah ke lowercase dan plural agar lebih konvensional
+}
+
+model Product {
+  id         String   @id @default(cuid())
+  name       String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+}
